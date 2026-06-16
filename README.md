@@ -124,6 +124,52 @@ Rev/revision/*
 
 If the workspace is named `Rev1/`, replace `Rev/` with `Rev1/`.
 
+## Workflow Map
+
+```text
+Template repo
+  .codex/skills/ or .claude/skills/
+        |
+        | sparse-checkout + copy
+        v
+Target research repo
+        |
+        | init-revision-workspace
+        v
+{Rev}/
+  origin/                         revision/                         docs/
+    rawcomments.md                  response-draft.md                 procedure.md
+    editormessage.md                response-draft.docx               structuredcomments.md
+    {article_id}.docx               {article_id}.rev.markup.docx      revisionplan.md
+    origin.md                       {article_id}.rev.clean.docx       procedure-execution.log
+    originsrc/
+        |                                  ^                                  ^
+        | convert-origin-docx              | make-clean-docx                  |
+        v                                  |                                  |
+  readable manuscript input         human edits markup docx           execute-procedure logs
+        |                                  |                                  |
+        +------------ build-procedure -----+---------- build-revision-plan ----+
+                                      |
+                                      | build-response-draft
+                                      v
+                                response-draft.md
+                                      |
+                                      | convert-response-docx
+                                      v
+                                response-draft.docx
+```
+
+Main outputs:
+
+- `{Rev}/origin/origin.md`: readable manuscript converted from the original DOCX.
+- `{Rev}/docs/procedure.md`: project procedure generated from the fixed template.
+- `{Rev}/docs/structuredcomments.md`: reviewer comments split without rewriting.
+- `{Rev}/docs/revisionplan.md`: ordered revision plan maintained by `build-revision-plan`.
+- `{Rev}/docs/procedure-execution.log`: execution log maintained by `execute-procedure`.
+- `{Rev}/revision/{article_id}.rev.clean.docx`: clean copy generated from markup without modifying markup.
+- `{Rev}/revision/response-draft.md`: response draft for human review and editing.
+- `{Rev}/revision/response-draft.docx`: styled response document generated from the Markdown draft.
+
 ## Typical Workflow
 
 1. Copy the Codex or Claude skills into the target research repo.

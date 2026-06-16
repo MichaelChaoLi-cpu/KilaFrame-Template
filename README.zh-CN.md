@@ -122,6 +122,52 @@ Rev/revision/*
 
 如果工作区叫 `Rev1/`，则把规则中的 `Rev/` 替换为 `Rev1/`。
 
+## 流程图
+
+```text
+Template repo
+  .codex/skills/ or .claude/skills/
+        |
+        | sparse-checkout + copy
+        v
+Target research repo
+        |
+        | init-revision-workspace
+        v
+{Rev}/
+  origin/                         revision/                         docs/
+    rawcomments.md                  response-draft.md                 procedure.md
+    editormessage.md                response-draft.docx               structuredcomments.md
+    {article_id}.docx               {article_id}.rev.markup.docx      revisionplan.md
+    origin.md                       {article_id}.rev.clean.docx       procedure-execution.log
+    originsrc/
+        |                                  ^                                  ^
+        | convert-origin-docx              | make-clean-docx                  |
+        v                                  |                                  |
+  readable manuscript input         human edits markup docx           execute-procedure logs
+        |                                  |                                  |
+        +------------ build-procedure -----+---------- build-revision-plan ----+
+                                      |
+                                      | build-response-draft
+                                      v
+                                response-draft.md
+                                      |
+                                      | convert-response-docx
+                                      v
+                                response-draft.docx
+```
+
+主要产出：
+
+- `{Rev}/origin/origin.md`：由原始 DOCX 转换出的可读原稿。
+- `{Rev}/docs/procedure.md`：基于固定模板生成的项目流程。
+- `{Rev}/docs/structuredcomments.md`：只分条、不改写的审稿意见结构化版本。
+- `{Rev}/docs/revisionplan.md`：由 `build-revision-plan` 维护的修改计划。
+- `{Rev}/docs/procedure-execution.log`：由 `execute-procedure` 维护的执行日志。
+- `{Rev}/revision/{article_id}.rev.clean.docx`：从 markup 生成的 clean 文件，不修改 markup。
+- `{Rev}/revision/response-draft.md`：供人类审阅和修改的 response 草稿。
+- `{Rev}/revision/response-draft.docx`：由 Markdown 草稿生成的带格式 response 文档。
+
 ## 推荐使用流程
 
 1. 将 Codex 或 Claude skills 复制到目标 research repo。
