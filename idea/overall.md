@@ -55,6 +55,10 @@ Agent 不负责：
   init-revision-workspace/
   build-procedure/
   execute-procedure/
+  convert-origin-docx/
+  make-clean-docx/
+  convert-response-docx/
+  build-response-draft/
 ```
 
 具体 skill 名称可以后续调整，但职责应保持分离。
@@ -212,7 +216,7 @@ procedure 使用固定模板，再做少量项目化修改。可以把 procedure
 
 这样目标 repo 不需要预先存在 `etc/procedure.md`。目标 repo 的正式流程文件应是 `{Rev}/docs/procedure.md`。
 
-Response template 不放在 `build-procedure` 中；它应由 `execute-procedure` 调用的其他 skill 提供，具体 skill 名称待定。
+Response template 不放在 `build-procedure` 中；它应由 `build-response-draft` 提供或引用。
 
 ### 4.3 Procedure 的内容边界
 
@@ -232,15 +236,22 @@ Response template 不放在 `build-procedure` 中；它应由 `execute-procedure
 
 ### 5.1 execute-procedure skill
 
-`execute-procedure` 的职责是：
+`execute-procedure` 是流程调度器，不直接承载格式转换逻辑。它的职责是：
 
 1. 读取 `{Rev}/docs/procedure.md`。
 2. 检查 `{Rev}/` 当前文件状态。
 3. 判断当前处于哪一步。
-4. 如果下一步是机器任务，则执行。
+4. 如果下一步是机器任务，则执行或调用对应子 skill。
 5. 如果下一步是人类任务，则提示 user 操作。
 6. 每一步完成后写 log。
 7. 必要时更新 `{Rev}/docs/revisionplan.md` 或相关文档。
+
+它调用的子 skill 包括：
+
+- `convert-origin-docx`: `{Rev}/origin/{article_id}.docx` -> `{Rev}/origin/origin.md` 和 `{Rev}/origin/originsrc/`。
+- `make-clean-docx`: `{Rev}/revision/{article_id}.rev.markup.docx` -> `{Rev}/revision/{article_id}.rev.clean.docx`，禁止修改 markup。
+- `convert-response-docx`: `{Rev}/revision/response-draft.md` -> `{Rev}/revision/response-draft.docx`，格式规则放在该 skill 中，作为个人风格固化。
+- `build-response-draft`: 根据 structured comments、editor message 和 response template 生成 response draft 初稿或 response 文本。
 
 ### 5.2 Logging 规则
 
@@ -269,11 +280,14 @@ Agent 可以自动执行：
 - 生成 structured comments。
 - 校验 structured comments 是否忠实于 raw comments。
 - 生成 revision plan。
-- 生成 response draft。
-- 从 markup 自动生成 clean docx，但不得修改 markup docx。
-- 将 response draft 转换为 docx。
+- 调用 `build-response-draft` 生成 response draft 初稿。
+- 调用 `make-clean-docx` 从 markup 自动生成 clean docx，但不得修改 markup docx。
+- 调用 `convert-origin-docx` 转换原稿。
+- 调用 `convert-response-docx` 将 response draft 转换为 docx。
 - 检查 clean docx 或 response docx 并提出意见。
 - 检查 `{Rev}/` 之外的 repo 代码、数据和分析材料，用于制定对 comment 的修改方案。
+
+Agent 默认不得直接写入 `{Rev}/revision/response-draft.md` 的逐条 response 修改内容。逐条 response 应先输出为方便 human 复制的文本，由 human 粘贴进 `response-draft.md`。只有 human 在当次请求中明确授权写入时，agent 才能写入；授权每次都要重新获得。
 
 Agent 只提示人类执行：
 
@@ -286,7 +300,7 @@ Agent 只提示人类执行：
 
 ## 6. Skill 数量设计
 
-建议最小可维护版本为 3 个 skills：
+建议最小可维护版本为 7 个 skills：
 
 1. `init-revision-workspace`
    - 在目标 repo 中创建 `{Rev}/`，默认是 `Rev/`，也可由 user 指定为 `Rev1/` 等名称。
@@ -303,11 +317,27 @@ Agent 只提示人类执行：
 
 3. `execute-procedure`
    - 按 `{Rev}/docs/procedure.md` 执行流程。
-   - 自动执行机器步骤。
+   - 自动执行机器步骤或调度子 skill。
    - 提示人类步骤。
    - 写入 `{Rev}/docs/procedure-execution.log`。
 
-不建议一开始拆得更多。比如 `build-response-draft`、`convert-response-docx`、`validate-comments` 可以先作为 `execute-procedure` 根据 procedure 调用的内部任务，而不是单独变成 skill。等某个任务足够复杂、反复独立使用时，再拆成独立 skill。
+4. `convert-origin-docx`
+   - 将 `{Rev}/origin/{article_id}.docx` 转换为 `{Rev}/origin/origin.md`。
+   - 将图片和资源输出到 `{Rev}/origin/originsrc/`。
+
+5. `make-clean-docx`
+   - 复制 `{Rev}/revision/{article_id}.rev.markup.docx` 为 clean docx。
+   - 在 clean docx 中接受全部修订。
+   - 禁止修改 markup docx。
+
+6. `convert-response-docx`
+   - 将 `{Rev}/revision/response-draft.md` 转换为 `{Rev}/revision/response-draft.docx`。
+   - 格式规则放在该 skill 中，用于固化个人文档风格。
+
+7. `build-response-draft`
+   - 根据 `{Rev}/docs/structuredcomments.md`、`{Rev}/origin/editormessage.md` 和 response template 生成 response draft 初稿或逐条 response 文本。
+   - 默认逐条 response 只输出给 human 复制，不直接写入 `response-draft.md`。
+   - 只有 human 在当次请求明确授权时才可写入 `response-draft.md`。
 
 ## 7. 推荐调用顺序
 
@@ -337,3 +367,7 @@ Agent 只提示人类执行：
 8. 原稿图片目录放在 `{Rev}/origin/originsrc/`。
 9. `structuredcomments.md` 放在 `{Rev}/docs/structuredcomments.md`。
 10. `response-template` 不放进 `build-procedure`，由 `execute-procedure` 调用的其他 skill 提供。
+11. convert 类能力拆为独立 skills：`convert-origin-docx`、`make-clean-docx`、`convert-response-docx`。
+12. response draft 生成拆为独立 skill：`build-response-draft`。
+13. `convert-response-docx` 的格式规则放入该 skill，用于固化个人文档风格。
+14. Agent 默认不得直接写入逐条 response 到 `{Rev}/revision/response-draft.md`；必须每次获得 human 明确授权。

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Make Clean DOCX"
+  short_description: "Create clean DOCX without changing markup"
+  default_prompt: "Use $make-clean-docx to create a clean DOCX copy from the markup document without modifying markup."

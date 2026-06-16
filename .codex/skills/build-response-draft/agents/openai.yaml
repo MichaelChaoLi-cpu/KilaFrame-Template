@@ -1,0 +1,4 @@
+interface:
+  display_name: "Build Response Draft"
+  short_description: "Draft response text from reviewer comments"
+  default_prompt: "Use $build-response-draft to build or draft response text from structured reviewer comments."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Convert Origin DOCX"
+  short_description: "Convert origin manuscript DOCX to Markdown"
+  default_prompt: "Use $convert-origin-docx to convert the origin manuscript DOCX into Markdown and extracted assets."

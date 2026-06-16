@@ -51,6 +51,7 @@ Human 负责准备：
 
 规则：
 
+- 由 `execute-procedure` 调用 `convert-origin-docx` 执行。
 - `origin.md` 是 agent 为阅读和定位修改建议生成的可读转换版。
 - `originsrc/` 存放转换产生的图片或资源。
 - 如果转换工具不可用，记录 blocker，并提示 human 或后续 agent 安装/提供工具。
@@ -173,8 +174,9 @@ Human 负责检查：
 
 规则：
 
+- 由 `execute-procedure` 调用 `build-response-draft` 执行。
 - Response template 不由 `build-procedure` 提供。
-- Response template 应由 `execute-procedure` 调用的其他 skill 提供，具体 skill 名称待定。
+- Response template 应由 `build-response-draft` 提供或引用。
 - 按 reviewer/comment 顺序复制 comment content。
 - 不得修改 reviewer comment 原文。
 - editor message 如需回应，则放入 editor 部分；如果不需要具体答复，可以只作为记录。
@@ -195,9 +197,9 @@ Human 负责检查：
 3. Agent 可读取 `{Rev}/origin/origin.md`、clean docx、相关代码、数据、脚本、结果文件，构思修改方案。
 4. Agent 给出原文修改建议、分析补充建议或需要 human 执行的操作。
 5. Human 在 `{Rev}/revision/{article_id}.rev.markup.docx` 中实际修改正文。
-6. Agent 从 markup 生成 `{Rev}/revision/{article_id}.rev.clean.docx`，但不得修改 markup。
+6. Agent 调用 `make-clean-docx` 从 markup 生成 `{Rev}/revision/{article_id}.rev.clean.docx`，但不得修改 markup。
 7. Agent 读取 clean docx，检查 human 修改是否支持回复该 comment。
-8. Agent 起草该 comment 的 response 段落，写入或建议写入 `{Rev}/revision/response-draft.md`。
+8. Agent 起草该 comment 的 response 段落，默认只输出为方便 human 复制的文本，由 human 粘贴进 `{Rev}/revision/response-draft.md`。
 9. Human 审阅 response。
 10. 如果 human 确认通过，Agent 更新 `{Rev}/docs/revisionplan.md` 的完成状态，并写 log。
 
@@ -213,6 +215,12 @@ Response 段落模式：
 - 只说明问题和建议下一步。
 - 如果 user 明确要求不要动 md，则不得修改 `response-draft.md`。
 
+写入权限：
+
+- Agent 默认不得直接写入逐条 response 到 `{Rev}/revision/response-draft.md`。
+- 只有 human 在当次请求中明确授权写入时，Agent 才能写入。
+- 这个授权每次都要重新获得，不能沿用上一次授权。
+
 ## 9. Agent: 转换 response draft 为 docx
 
 输入：
@@ -225,7 +233,8 @@ Response 段落模式：
 
 规则：
 
-- 使用 response docx 格式规则或相关 skill。
+- 由 `execute-procedure` 调用 `convert-response-docx` 执行。
+- 使用 `convert-response-docx` skill 中固化的个人文档格式规则。
 - 转换后检查结构和明显格式问题。
 - 不修改 markup docx。
 

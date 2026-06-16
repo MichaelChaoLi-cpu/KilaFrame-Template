@@ -1,0 +1,4 @@
+interface:
+  display_name: "Convert Response DOCX"
+  short_description: "Convert response Markdown to styled DOCX"
+  default_prompt: "Use $convert-response-docx to convert response-draft.md into a styled response DOCX."
