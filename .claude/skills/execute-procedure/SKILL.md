@@ -1,6 +1,6 @@
 ---
 name: execute-procedure
-description: Drive the manuscript revision workflow from {Rev}/docs/procedure.md. Use when Codex needs to inspect revision progress, identify the current procedure step, route human-only work, execute or dispatch machine-owned work through skills such as convert-origin-docx, make-clean-docx, convert-response-docx, and build-response-draft, append {Rev}/docs/procedure-execution.log, choose the next unfinished revision-plan item, or draft response text while preserving the rule that markup docx files are never modified and response-draft.md is only written with explicit per-request human authorization.
+description: Drive the manuscript revision workflow from {Rev}/docs/procedure.md. Use when the agent needs to inspect revision progress, identify the current procedure step, route human-only work, execute or dispatch machine-owned work through skills such as convert-origin-docx, build-revision-plan, make-clean-docx, convert-response-docx, and build-response-draft, append {Rev}/docs/procedure-execution.log, choose the next unfinished revision-plan item, or draft response text while preserving the rule that markup docx files are never modified and response-draft.md is only written with explicit per-request human authorization.
 ---
 
 # Execute Procedure
@@ -9,7 +9,7 @@ description: Drive the manuscript revision workflow from {Rev}/docs/procedure.md
 
 Use this skill as the workflow controller for a revision workspace. Read `{Rev}/docs/procedure.md`, inspect current files, decide the next step, append a log entry, then either dispatch a machine-owned task or tell the human exactly what to do.
 
-This skill is a controller. Keep conversion, response formatting, and response-draft generation in dedicated skills when available.
+This skill is a controller. Keep conversion, revision-plan construction, response formatting, and response-draft generation in dedicated skills when available.
 
 ## Inputs
 
@@ -48,6 +48,7 @@ Even with authorization, preserve reviewer comment text exactly and report the c
 Use or invoke these skills when the corresponding task is next:
 
 - `convert-origin-docx`: convert `{Rev}/origin/{article_id}.docx` to `{Rev}/origin/origin.md` and `{Rev}/origin/originsrc/`.
+- `build-revision-plan`: create or update `{Rev}/docs/revisionplan.md`, assign execution order, preserve human notes/status, and choose the next unfinished item.
 - `make-clean-docx`: copy `{Rev}/revision/{article_id}.rev.markup.docx` to `{Rev}/revision/{article_id}.rev.clean.docx` and accept revisions only in the clean copy; never modify markup.
 - `convert-response-docx`: convert `{Rev}/revision/response-draft.md` to `{Rev}/revision/response-draft.docx` using the skill's personal document formatting rules.
 - `build-response-draft`: create the initial response draft or generate response text from `{Rev}/docs/structuredcomments.md`, `{Rev}/origin/editormessage.md`, and response template rules.
@@ -93,7 +94,7 @@ Use this format:
 - Status: <done | next-human | next-ai | dispatched | blocked | needs-review>
 - Actions taken: <concrete changes, dispatches, or "none">
 - Verification: <checks actually performed>
-- Next: <one concrete next action for human or Codex>
+- Next: <one concrete next action for human or agent>
 - Boundaries: markup docx untouched; response-draft.md write <not requested | authorized this request | not touched>
 ```
 
@@ -115,16 +116,16 @@ Machine-owned directly in this controller:
 - check file presence and workflow status
 - structure raw comments into `{Rev}/docs/structuredcomments.md`
 - validate structured comments against raw comments
-- build `{Rev}/docs/revisionplan.md`
-- choose the highest-priority unfinished comment from `{Rev}/docs/revisionplan.md`
+- identify the next unfinished comment using `build-revision-plan` rules and `{Rev}/docs/revisionplan.md`
 - inspect repo code, data, scripts, or results outside `{Rev}/` for modification planning
 - draft manuscript change suggestions for the human
 - draft response text for the human to copy
-- update `{Rev}/docs/revisionplan.md` only after human confirms the response/modification is acceptable
+- request or dispatch revision-plan status updates only after human confirms the response/modification is acceptable
 
 Dispatch to other skills:
 
 - origin docx conversion -> `convert-origin-docx`
+- revision plan creation, priority ordering, and status maintenance -> `build-revision-plan`
 - clean docx generation -> `make-clean-docx`
 - response draft initial build or response template use -> `build-response-draft`
 - response docx conversion and formatting -> `convert-response-docx`
@@ -132,16 +133,16 @@ Dispatch to other skills:
 Shared/review:
 
 - If the user asks whether a response or modification is acceptable, inspect current files and explain issues.
-- If acceptable and the user asked to update plan/log, update `{Rev}/docs/revisionplan.md` and log.
+- If acceptable and the user asked to update plan/log, dispatch revision-plan status maintenance to `build-revision-plan` and log.
 - If unacceptable, explain the issue and do not edit Markdown unless the user explicitly asks for edits.
 
 ## Artifact Rules
 
 - Preserve reviewer comment text verbatim. Structure, numbering, and headings may be added, but comment content must remain copied rather than rewritten.
 - For `{Rev}/docs/structuredcomments.md`, ensure all raw comment content is represented and no new comment content is invented.
-- For `{Rev}/docs/revisionplan.md`, include: reviewer id, comment id, 修改序号, 问题简述, 风险等级, 影响的章节, 修改计划, 是否搞定.
+- For `{Rev}/docs/revisionplan.md`, rely on `build-revision-plan` for required columns, sorting, status preservation, and coverage checks.
 - Sort revision plan by the dependency/locality/risk rules in `{Rev}/docs/procedure.md`.
-- When choosing the next comment, read `{Rev}/docs/revisionplan.md`, sort by 修改序号, and pick the first item not marked complete.
+- When choosing the next comment, follow `build-revision-plan` rules: read `{Rev}/docs/revisionplan.md`, sort by 修改序号, and pick the first item not marked complete.
 - For response text after a human manuscript edit, use the pattern: thank the reviewer, identify the changed section, summarize the change in one sentence, leave room for the human to paste quotations/page/line numbers.
 
 ## Reporting To The User

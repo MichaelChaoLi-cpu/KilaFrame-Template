@@ -20,7 +20,7 @@ This repository is not meant to hold a specific manuscript. It holds reusable wo
 
 ## Skills
 
-This bundle contains seven skills:
+This bundle contains eight skills:
 
 | Skill | Role |
 | --- | --- |
@@ -28,6 +28,7 @@ This bundle contains seven skills:
 | `build-procedure` | Generate `{Rev}/docs/procedure.md` from a fixed template with small project-specific edits. |
 | `execute-procedure` | Read the procedure, check current state, log progress, run machine steps, or prompt the human for the next human step. |
 | `convert-origin-docx` | Convert `{Rev}/origin/{article_id}.docx` into `{Rev}/origin/origin.md` and `{Rev}/origin/originsrc/`. |
+| `build-revision-plan` | Create and maintain `{Rev}/docs/revisionplan.md`, including priority order, responsibilities, dependencies, and status. |
 | `make-clean-docx` | Copy `{Rev}/revision/{article_id}.rev.markup.docx` to `{Rev}/revision/{article_id}.rev.clean.docx` and accept revisions only in the clean copy. |
 | `convert-response-docx` | Convert `{Rev}/revision/response-draft.md` to `{Rev}/revision/response-draft.docx` using the bundled response DOCX style. |
 | `build-response-draft` | Build the initial response draft or per-comment response text from structured comments, editor messages, and the bundled response template. |
@@ -130,7 +131,7 @@ If the workspace is named `Rev1/`, replace `Rev/` with `Rev1/`.
 3. Human places `{article_id}.docx`, `rawcomments.md`, and `editormessage.md` in `{Rev}/origin/`.
 4. Ask the agent to run `build-procedure` to create `{Rev}/docs/procedure.md`.
 5. Ask the agent to run `execute-procedure`.
-6. The agent checks the current state, writes `{Rev}/docs/procedure-execution.log`, and either runs the next machine step or prompts the human.
+6. The agent checks the current state, writes `{Rev}/docs/procedure-execution.log`, and either runs the next machine step, dispatches skills such as `build-revision-plan`, or prompts the human.
 7. Human performs manuscript body edits in the markup DOCX.
 8. The agent may generate clean DOCX, draft response text, update plans, and convert the response draft to DOCX according to the procedure.
 

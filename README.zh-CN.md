@@ -18,7 +18,7 @@ KilaFrame Template 是一组用于论文审稿修改流程的 agent skills。它
 
 ## Skills 列表
 
-当前包含七个 skills：
+当前包含八个 skills：
 
 | Skill | 作用 |
 | --- | --- |
@@ -26,6 +26,7 @@ KilaFrame Template 是一组用于论文审稿修改流程的 agent skills。它
 | `build-procedure` | 基于固定模板生成 `{Rev}/docs/procedure.md`，再做少量项目化修改。 |
 | `execute-procedure` | 读取 procedure，检查当前状态，写 log，执行机器步骤，或提示人类下一步。 |
 | `convert-origin-docx` | 将 `{Rev}/origin/{article_id}.docx` 转换为 `{Rev}/origin/origin.md` 和 `{Rev}/origin/originsrc/`。 |
+| `build-revision-plan` | 创建和维护 `{Rev}/docs/revisionplan.md`，包括优先级、负责人、依赖关系和状态。 |
 | `make-clean-docx` | 将 `{Rev}/revision/{article_id}.rev.markup.docx` 复制为 `{Rev}/revision/{article_id}.rev.clean.docx`，只在 clean 文件中接受修订。 |
 | `convert-response-docx` | 使用 skill 内置的 response DOCX 风格，将 `{Rev}/revision/response-draft.md` 转换为 `{Rev}/revision/response-draft.docx`。 |
 | `build-response-draft` | 根据 structured comments、editor message 和 response template 生成 response 初稿或逐条 response 文本。 |
@@ -128,7 +129,7 @@ Rev/revision/*
 3. 人类把 `{article_id}.docx`、`rawcomments.md` 和 `editormessage.md` 放入 `{Rev}/origin/`。
 4. 让 agent 运行 `build-procedure`，生成 `{Rev}/docs/procedure.md`。
 5. 让 agent 运行 `execute-procedure`。
-6. Agent 检查当前状态，写入 `{Rev}/docs/procedure-execution.log`，然后执行下一个机器步骤，或提示人类操作。
+6. Agent 检查当前状态，写入 `{Rev}/docs/procedure-execution.log`，然后执行下一个机器步骤、调度 `build-revision-plan` 等 skill，或提示人类操作。
 7. 人类在 markup DOCX 中完成正文修改。
 8. Agent 根据 procedure 继续生成 clean DOCX、起草 response、更新 plan，并将 response draft 转换为 DOCX。
 

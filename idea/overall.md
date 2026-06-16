@@ -2,11 +2,11 @@
 
 ## 0. 设计目标
 
-本项目不是直接处理某一篇论文，而是提供一组 Codex skills，用来注入到具体 research repo 中，帮助人类完成审稿修改流程。
+本项目不是直接处理某一篇论文，而是提供一组 agent skills，支持 Codex 版和 Claude 版，用来注入到具体 research repo 中，帮助人类完成审稿修改流程。
 
 核心目标：
 
-1. 将本 repo 中维护的 Codex skills 复制或同步到目标 research repo。
+1. 将本 repo 中维护的 Codex 或 Claude skills 复制或同步到目标 research repo。
 2. 在目标 repo 中建立一个用于审稿修改的工作区，默认是 `Rev/`，也可以由 user 指定为 `Rev1/` 等名称。
 3. 基于固定模板和少量项目化修改生成 `{Rev}/docs/procedure.md`。
 4. 由执行 skill 按 procedure 检查进度、写 log、提示人类下一步，或自动执行机器可执行步骤。
@@ -48,7 +48,7 @@ Agent 不负责：
 
 ### 2.1 获取内容
 
-目标 research repo 需要获得本 repo 中维护的 skills：
+目标 research repo 需要按使用的 agent 获得本 repo 中维护的 skills：
 
 ```text
 .codex/skills/
@@ -56,6 +56,17 @@ Agent 不负责：
   build-procedure/
   execute-procedure/
   convert-origin-docx/
+  build-revision-plan/
+  make-clean-docx/
+  convert-response-docx/
+  build-response-draft/
+
+.claude/skills/
+  init-revision-workspace/
+  build-procedure/
+  execute-procedure/
+  convert-origin-docx/
+  build-revision-plan/
   make-clean-docx/
   convert-response-docx/
   build-response-draft/
@@ -75,12 +86,12 @@ Agent 不负责：
 
 ### 2.3 是否可以只下载 repo 的一部分
 
-可以。README 可以提供命令，让 user 只下载或同步本 repo 中的 `.codex/skills/`。
+可以。README 可以提供命令，让 user 只下载或同步本 repo 中的 `.codex/skills/` 或 `.claude/skills/`。
 
 可选方式：
 
 1. 推荐使用 `git sparse-checkout` 获取指定目录。
-2. 下载 GitHub archive 后只解压 `.codex/skills/`。
+2. 下载 GitHub archive 后只解压 `.codex/skills/` 或 `.claude/skills/`。
 3. 使用 GitHub API 或专门工具下载单个目录。
 
 这里不使用 `git clone` 把整个 repo 放进目标 repo 内部。
@@ -93,6 +104,7 @@ Agent 不负责：
 
 ```gitignore
 .codex/skills/
+.claude/skills/
 ```
 
 同时，新建的 revision 工作区默认也应进入 `.gitignore`，只开放 `{Rev}/revision/response-draft.md` 给 git。以默认工作区 `Rev/` 为例：
@@ -117,7 +129,7 @@ Rev/revision/*
 3. clone 到目标 repo 内部容易形成嵌套 repo，增加同步和提交风险。
 4. 获取后的 skills 按设计应被 `.gitignore` 忽略，不属于目标 repo 要上传的研究内容。
 
-推荐方式是复制或同步本 repo 中的 skill 目录到目标 repo 的 `.codex/skills/`。如果需要版本管理，应在本 repo 中管理模板和 skills，而不是在每个目标 research repo 中 clone 一份。
+推荐方式是复制或同步本 repo 中对应 agent 的 skill 目录到目标 repo 的 `.codex/skills/` 或 `.claude/skills/`。如果需要版本管理，应在本 repo 中管理模板和 skills，而不是在每个目标 research repo 中 clone 一份。
 
 ## 3. Rev 工作区设计
 
@@ -249,6 +261,7 @@ Response template 不放在 `build-procedure` 中；它应由 `build-response-dr
 它调用的子 skill 包括：
 
 - `convert-origin-docx`: `{Rev}/origin/{article_id}.docx` -> `{Rev}/origin/origin.md` 和 `{Rev}/origin/originsrc/`。
+- `build-revision-plan`: 根据 structured comments、editor message、origin.md 和必要的 repo 上下文创建或维护 `{Rev}/docs/revisionplan.md`。
 - `make-clean-docx`: `{Rev}/revision/{article_id}.rev.markup.docx` -> `{Rev}/revision/{article_id}.rev.clean.docx`，禁止修改 markup。
 - `convert-response-docx`: `{Rev}/revision/response-draft.md` -> `{Rev}/revision/response-draft.docx`，格式规则放在该 skill 中，作为个人风格固化。
 - `build-response-draft`: 根据 structured comments、editor message 和 response template 生成 response draft 初稿或 response 文本。
@@ -279,7 +292,7 @@ Agent 可以自动执行：
 
 - 生成 structured comments。
 - 校验 structured comments 是否忠实于 raw comments。
-- 生成 revision plan。
+- 调用 `build-revision-plan` 生成或更新 revision plan。
 - 调用 `build-response-draft` 生成 response draft 初稿。
 - 调用 `make-clean-docx` 从 markup 自动生成 clean docx，但不得修改 markup docx。
 - 调用 `convert-origin-docx` 转换原稿。
@@ -300,14 +313,14 @@ Agent 只提示人类执行：
 
 ## 6. Skill 数量设计
 
-建议最小可维护版本为 7 个 skills：
+建议最小可维护版本为 8 个 skills：
 
 1. `init-revision-workspace`
    - 在目标 repo 中创建 `{Rev}/`，默认是 `Rev/`，也可由 user 指定为 `Rev1/` 等名称。
    - 建立 `origin/`、`revision/`、`docs/`。
    - 在缺失时创建空文件 `{Rev}/origin/rawcomments.md` 和 `{Rev}/origin/editormessage.md`；如果已存在则不覆盖，并提醒 human 检查。
    - 更新目标 repo `.gitignore`。
-   - 忽略注入的 `.codex/skills/`。
+   - 忽略注入的 `.codex/skills/` 和 `.claude/skills/`。
    - 忽略新建的 revision 工作区，只开放 `{Rev}/revision/response-draft.md` 给 git。
    - 不填充具体论文内容。
 
@@ -325,16 +338,22 @@ Agent 只提示人类执行：
    - 将 `{Rev}/origin/{article_id}.docx` 转换为 `{Rev}/origin/origin.md`。
    - 将图片和资源输出到 `{Rev}/origin/originsrc/`。
 
-5. `make-clean-docx`
+5. `build-revision-plan`
+   - 根据 `{Rev}/docs/structuredcomments.md`、`{Rev}/origin/editormessage.md`、`{Rev}/origin/origin.md` 和必要的 repo 上下文生成或更新 `{Rev}/docs/revisionplan.md`。
+   - 负责 comment 优先级、依赖关系、负责人、状态维护和下一条未完成 comment 的选择规则。
+   - Revision plan 由 agent 起草和维护，但研究策略和最终确认属于 human。
+   - 不修改 markup docx。
+
+6. `make-clean-docx`
    - 复制 `{Rev}/revision/{article_id}.rev.markup.docx` 为 clean docx。
    - 在 clean docx 中接受全部修订。
    - 禁止修改 markup docx。
 
-6. `convert-response-docx`
+7. `convert-response-docx`
    - 将 `{Rev}/revision/response-draft.md` 转换为 `{Rev}/revision/response-draft.docx`。
    - 格式规则放在该 skill 中，用于固化个人文档风格。
 
-7. `build-response-draft`
+8. `build-response-draft`
    - 根据 `{Rev}/docs/structuredcomments.md`、`{Rev}/origin/editormessage.md` 和 response template 生成 response draft 初稿或逐条 response 文本。
    - 默认逐条 response 只输出给 human 复制，不直接写入 `response-draft.md`。
    - 只有 human 在当次请求明确授权时才可写入 `response-draft.md`。
@@ -344,13 +363,13 @@ Agent 只提示人类执行：
 在目标 research repo 中，user 的使用顺序是：
 
 ```text
-1. 按 README 命令把本 repo 的 skills 获取到目标 repo 的 .codex/skills/
+1. 按 README 命令把本 repo 的 skills 获取到目标 repo 的 .codex/skills/ 或 .claude/skills/
 2. 使用 init-revision-workspace 初始化 {Rev}/ 并更新 .gitignore
 3. 人类把原稿、审稿意见、编辑意见放入 {Rev}/origin/
 4. 使用 build-procedure 生成 {Rev}/docs/procedure.md
 5. 使用 execute-procedure 检查当前状态并推进流程
 6. 人类根据提示在 markup.docx 中修改正文
-7. execute-procedure 继续检查、写 response、更新 log 和计划
+7. execute-procedure 继续检查、调度 build-revision-plan、写 response、更新 log 和计划
 ```
 
 ## 8. 已确认设计决策
@@ -361,13 +380,14 @@ Agent 只提示人类执行：
 2. `response-draft.md` 固定放在 `{Rev}/revision/response-draft.md`。
 3. `clean.docx` 由 agent 自动从 markup 生成，但 agent 不得修改 markup 文件。
 4. `procedure.md` 从固定模板复制后做少量项目化修改。
-5. README 中推荐使用 `git sparse-checkout` 获取本 repo 的 `.codex/skills/`。
+5. README 中推荐使用 `git sparse-checkout` 获取本 repo 的 `.codex/skills/` 或 `.claude/skills/`。
 6. `{article_id}` 来自 `{Rev}/origin/{article_id}.docx`。
 7. `origin.md` 放在 `{Rev}/origin/origin.md`。
 8. 原稿图片目录放在 `{Rev}/origin/originsrc/`。
 9. `structuredcomments.md` 放在 `{Rev}/docs/structuredcomments.md`。
 10. `response-template` 不放进 `build-procedure`，由 `execute-procedure` 调用的其他 skill 提供。
-11. convert 类能力拆为独立 skills：`convert-origin-docx`、`make-clean-docx`、`convert-response-docx`。
-12. response draft 生成拆为独立 skill：`build-response-draft`。
-13. `convert-response-docx` 的格式规则放入该 skill，用于固化个人文档风格。
-14. Agent 默认不得直接写入逐条 response 到 `{Rev}/revision/response-draft.md`；必须每次获得 human 明确授权。
+11. Revision plan 生成和维护拆为独立 skill：`build-revision-plan`。
+12. convert 类能力拆为独立 skills：`convert-origin-docx`、`make-clean-docx`、`convert-response-docx`。
+13. response draft 生成拆为独立 skill：`build-response-draft`。
+14. `convert-response-docx` 的格式规则放入该 skill，用于固化个人文档风格。
+15. Agent 默认不得直接写入逐条 response 到 `{Rev}/revision/response-draft.md`；必须每次获得 human 明确授权。

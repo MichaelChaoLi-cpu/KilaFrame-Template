@@ -1,6 +1,6 @@
 ---
 name: make-clean-docx
-description: Create a clean DOCX from a revision markup DOCX without modifying the markup file. Use when Codex needs to copy {Rev}/revision/{article_id}.rev.markup.docx to {Rev}/revision/{article_id}.rev.clean.docx and accept tracked changes only in the clean copy while preserving the hard rule that markup DOCX files are never changed.
+description: Create a clean DOCX from a revision markup DOCX without modifying the markup file. Use when the agent needs to copy {Rev}/revision/{article_id}.rev.markup.docx to {Rev}/revision/{article_id}.rev.clean.docx and accept tracked changes only in the clean copy while preserving the hard rule that markup DOCX files are never changed.
 ---
 
 # Make Clean DOCX

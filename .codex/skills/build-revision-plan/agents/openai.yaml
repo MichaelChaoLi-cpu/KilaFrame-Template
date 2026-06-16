@@ -1,0 +1,4 @@
+interface:
+  display_name: "Build Revision Plan"
+  short_description: "Create and maintain revisionplan.md"
+  default_prompt: "Use $build-revision-plan to create or update the manuscript revision plan."

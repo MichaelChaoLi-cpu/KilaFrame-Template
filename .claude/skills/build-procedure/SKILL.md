@@ -1,6 +1,6 @@
 ---
 name: build-procedure
-description: Generate a manuscript revision procedure from the fixed template. Use when Codex needs to create or update {Rev}/docs/procedure.md for a revision workspace initialized by init-revision-workspace, identify article_id from {Rev}/origin/{article_id}.docx, apply only user-specified project adjustments, and preserve the rules that markup docx files are never modified and response-template rules are supplied by build-response-draft.
+description: Generate a manuscript revision procedure from the fixed template. Use when the agent needs to create or update {Rev}/docs/procedure.md for a revision workspace initialized by init-revision-workspace, identify article_id from {Rev}/origin/{article_id}.docx, apply only user-specified project adjustments, and preserve the rules that markup docx files are never modified and response-template rules are supplied by build-response-draft.
 ---
 
 # Build Procedure

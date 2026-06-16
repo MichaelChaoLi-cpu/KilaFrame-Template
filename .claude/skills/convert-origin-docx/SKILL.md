@@ -1,6 +1,6 @@
 ---
 name: convert-origin-docx
-description: Convert the original manuscript DOCX in a revision workspace to readable Markdown. Use when Codex needs to convert {Rev}/origin/{article_id}.docx into {Rev}/origin/origin.md and extract images/assets into {Rev}/origin/originsrc/ without modifying the source DOCX or any markup DOCX files.
+description: Convert the original manuscript DOCX in a revision workspace to readable Markdown. Use when the agent needs to convert {Rev}/origin/{article_id}.docx into {Rev}/origin/origin.md and extract images/assets into {Rev}/origin/originsrc/ without modifying the source DOCX or any markup DOCX files.
 ---
 
 # Convert Origin DOCX

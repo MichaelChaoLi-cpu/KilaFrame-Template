@@ -1,6 +1,6 @@
 ---
 name: init-revision-workspace
-description: Initialize a manuscript revision workspace in a target research repo. Use when Codex needs to create the default Rev/ workspace or a user-named revision workspace such as Rev1/, create origin/, revision/, and docs/, create empty origin/rawcomments.md and origin/editormessage.md input files, and update the target repo .gitignore so injected .codex/skills/ and revision artifacts stay untracked except {Rev}/revision/response-draft.md.
+description: Initialize a manuscript revision workspace in a target research repo. Use when the agent needs to create the default Rev/ workspace or a user-named revision workspace such as Rev1/, create origin/, revision/, and docs/, create empty origin/rawcomments.md and origin/editormessage.md input files, and update the target repo .gitignore so injected .codex/skills/, .claude/skills/, and revision artifacts stay untracked except {Rev}/revision/response-draft.md.
 ---
 
 # Init Revision Workspace
@@ -60,6 +60,7 @@ Add or update a single managed block:
 ```gitignore
 # BEGIN manuscript revision workspace
 .codex/skills/
+.claude/skills/
 {Rev}/*
 !{Rev}/revision/
 {Rev}/revision/*
@@ -72,6 +73,7 @@ Replace `{Rev}` with the actual workspace root, for example:
 ```gitignore
 # BEGIN manuscript revision workspace
 .codex/skills/
+.claude/skills/
 Rev/*
 !Rev/revision/
 Rev/revision/*

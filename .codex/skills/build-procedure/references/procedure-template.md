@@ -133,10 +133,20 @@ Human 负责检查：
 输入：
 
 - `{Rev}/docs/structuredcomments.md`
+- `{Rev}/origin/editormessage.md`
+- `{Rev}/origin/origin.md`，如果已生成
+- `{Rev}/` 外相关 repo 文件，仅在判断 comment 修改方案时需要
 
 输出：
 
 - `{Rev}/docs/revisionplan.md`
+
+规则：
+
+- 由 `execute-procedure` 调用 `build-revision-plan` 执行。
+- `build-revision-plan` 负责创建和维护 revision plan。
+- Revision plan 是 agent 起草和维护的执行计划，但研究策略和最终确认属于 human。
+- 如果 `revisionplan.md` 已存在，不得直接覆盖；应保留已有状态和 human notes，除非 human 明确要求重新生成。
 
 表格列：
 
@@ -147,6 +157,8 @@ Human 负责检查：
 - 风险等级
 - 影响的章节
 - 修改计划
+- 负责人
+- 依赖
 - 是否搞定
 
 排序原则：
@@ -158,7 +170,7 @@ Human 负责检查：
 
 完成后：
 
-- `execute-procedure` 写入 plan 生成结果。
+- `execute-procedure` 写入 plan 生成或更新结果。
 
 ## 7. Agent: 生成 response draft
 
@@ -193,7 +205,7 @@ Human 负责检查：
 每条 comment 的循环：
 
 1. Human 询问当前最高优先级且未完成的 comment。
-2. Agent 读取 `{Rev}/docs/revisionplan.md`，选择排序最高且未完成的一条。
+2. Agent 调用或遵循 `build-revision-plan` 的规则读取 `{Rev}/docs/revisionplan.md`，选择排序最高且未完成的一条。
 3. Agent 可读取 `{Rev}/origin/origin.md`、clean docx、相关代码、数据、脚本、结果文件，构思修改方案。
 4. Agent 给出原文修改建议、分析补充建议或需要 human 执行的操作。
 5. Human 在 `{Rev}/revision/{article_id}.rev.markup.docx` 中实际修改正文。
@@ -201,7 +213,7 @@ Human 负责检查：
 7. Agent 读取 clean docx，检查 human 修改是否支持回复该 comment。
 8. Agent 起草该 comment 的 response 段落，默认只输出为方便 human 复制的文本，由 human 粘贴进 `{Rev}/revision/response-draft.md`。
 9. Human 审阅 response。
-10. 如果 human 确认通过，Agent 更新 `{Rev}/docs/revisionplan.md` 的完成状态，并写 log。
+10. 如果 human 确认通过，Agent 调用 `build-revision-plan` 更新 `{Rev}/docs/revisionplan.md` 的完成状态，并写 log。
 
 Response 段落模式：
 

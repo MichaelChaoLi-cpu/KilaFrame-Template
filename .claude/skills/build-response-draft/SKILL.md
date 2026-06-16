@@ -1,6 +1,6 @@
 ---
 name: build-response-draft
-description: Build response-to-reviewers Markdown drafts and per-comment response text from structured reviewer comments. Use when Codex needs to create the initial {Rev}/revision/response-draft.md from {Rev}/docs/structuredcomments.md and {Rev}/origin/editormessage.md, or draft response text for a specific comment while preserving reviewer wording and only writing to response-draft.md with explicit per-request human authorization.
+description: Build response-to-reviewers Markdown drafts and per-comment response text from structured reviewer comments. Use when the agent needs to create the initial {Rev}/revision/response-draft.md from {Rev}/docs/structuredcomments.md and {Rev}/origin/editormessage.md, or draft response text for a specific comment while preserving reviewer wording and only writing to response-draft.md with explicit per-request human authorization.
 ---
 
 # Build Response Draft

@@ -1,6 +1,6 @@
 ---
 name: convert-response-docx
-description: Convert a response-to-reviewers Markdown draft into a styled DOCX using the user's personal response formatting rules. Use when Codex needs to convert {Rev}/revision/response-draft.md to {Rev}/revision/response-draft.docx, preserve reviewer/comment text, apply the bundled response DOCX format law, and avoid modifying any markup DOCX files.
+description: Convert a response-to-reviewers Markdown draft into a styled DOCX using the user's personal response formatting rules. Use when the agent needs to convert {Rev}/revision/response-draft.md to {Rev}/revision/response-draft.docx, preserve reviewer/comment text, apply the bundled response DOCX format law, and avoid modifying any markup DOCX files.
 ---
 
 # Convert Response DOCX
