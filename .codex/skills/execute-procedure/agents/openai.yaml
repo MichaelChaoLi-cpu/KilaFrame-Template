@@ -1,0 +1,4 @@
+interface:
+  display_name: "Execute Procedure"
+  short_description: "Check procedure status and log next steps"
+  default_prompt: "Use $execute-procedure to check the current revision workflow status, write the execution log, and decide the next action."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Init Revision Workspace"
+  short_description: "Create revision workspace and gitignore rules"
+  default_prompt: "Use $init-revision-workspace to initialize the revision workspace and update .gitignore."

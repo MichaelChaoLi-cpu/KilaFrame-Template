@@ -1,0 +1,4 @@
+interface:
+  display_name: "Build Procedure"
+  short_description: "Generate procedure from revision template"
+  default_prompt: "Use $build-procedure to generate the revision procedure from the fixed template."
