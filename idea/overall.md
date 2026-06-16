@@ -129,16 +129,20 @@ Rev/
 
 ### 3.2 基础结构
 
-初始化时只建立目录，不填充具体内容：
+初始化时建立目录，并在缺失时创建两个空的评论输入文件：
 
 ```text
 Rev/
   origin/
+    rawcomments.md
+    editormessage.md
   revision/
   docs/
 ```
 
 `etc/` 是 optional，不强制建立。
+
+如果 `{Rev}/origin/rawcomments.md` 或 `{Rev}/origin/editormessage.md` 已存在，初始化过程不得写入或覆盖它们，而应提醒 human 检查已有内容。
 
 ### 3.3 目录职责
 
@@ -146,7 +150,9 @@ Rev/
 
 用于存放：
 
-- 论文原稿。
+- 论文原稿，命名为 `{article_id}.docx`。
+- 原稿转换后的可读 Markdown，命名为 `origin.md`。
+- 原稿转换产生的图片目录，命名为 `originsrc/`。
 - 原始审稿意见。
 - 编辑意见。
 
@@ -168,12 +174,14 @@ Rev/
 - Agent 运行时自动从 markup 生成 clean 版本，但必须输出为独立 clean 文件，不能改变 markup 文件。
 - `response-draft.md` 固定放在 `{Rev}/revision/response-draft.md`，可由 agent 生成初稿，并由人类逐步修改。
 - `response-draft.docx` 可由 skill 从 `response-draft.md` 转换生成，之后由人类审阅。
+- `{article_id}` 来自 `{Rev}/origin/{article_id}.docx` 的文件名。
 
 `docs/` 是流程和记录区。
 
 用于存放：
 
 - `procedure.md`
+- `structuredcomments.md`
 - `revisionplan.md`
 - `procedure-execution.log`
 - 其他流程记录、检查结果、规则化文档
@@ -204,6 +212,8 @@ procedure 使用固定模板，再做少量项目化修改。可以把 procedure
 
 这样目标 repo 不需要预先存在 `etc/procedure.md`。目标 repo 的正式流程文件应是 `{Rev}/docs/procedure.md`。
 
+Response template 不放在 `build-procedure` 中；它应由 `execute-procedure` 调用的其他 skill 提供，具体 skill 名称待定。
+
 ### 4.3 Procedure 的内容边界
 
 `procedure.md` 应明确：
@@ -215,6 +225,8 @@ procedure 使用固定模板，再做少量项目化修改。可以把 procedure
 - 每一步的输出文件。
 - 每一步完成后写入哪个 log 或更新哪个计划文件。
 - `markup.docx` 禁止写入规则。
+- `{article_id}` 从 `{Rev}/origin/{article_id}.docx` 识别。
+- Agent 可以检查 `{Rev}/` 之外的 repo 代码、数据、脚本和结果文件来构思修改方案，但不得把这些目录假定为固定名称。
 
 ## 5. 流程执行设计
 
@@ -261,6 +273,7 @@ Agent 可以自动执行：
 - 从 markup 自动生成 clean docx，但不得修改 markup docx。
 - 将 response draft 转换为 docx。
 - 检查 clean docx 或 response docx 并提出意见。
+- 检查 `{Rev}/` 之外的 repo 代码、数据和分析材料，用于制定对 comment 的修改方案。
 
 Agent 只提示人类执行：
 
@@ -278,6 +291,7 @@ Agent 只提示人类执行：
 1. `init-revision-workspace`
    - 在目标 repo 中创建 `{Rev}/`，默认是 `Rev/`，也可由 user 指定为 `Rev1/` 等名称。
    - 建立 `origin/`、`revision/`、`docs/`。
+   - 在缺失时创建空文件 `{Rev}/origin/rawcomments.md` 和 `{Rev}/origin/editormessage.md`；如果已存在则不覆盖，并提醒 human 检查。
    - 更新目标 repo `.gitignore`。
    - 忽略注入的 `.codex/skills/`。
    - 忽略新建的 revision 工作区，只开放 `{Rev}/revision/response-draft.md` 给 git。
@@ -318,3 +332,8 @@ Agent 只提示人类执行：
 3. `clean.docx` 由 agent 自动从 markup 生成，但 agent 不得修改 markup 文件。
 4. `procedure.md` 从固定模板复制后做少量项目化修改。
 5. README 中推荐使用 `git sparse-checkout` 获取本 repo 的 `.codex/skills/`。
+6. `{article_id}` 来自 `{Rev}/origin/{article_id}.docx`。
+7. `origin.md` 放在 `{Rev}/origin/origin.md`。
+8. 原稿图片目录放在 `{Rev}/origin/originsrc/`。
+9. `structuredcomments.md` 放在 `{Rev}/docs/structuredcomments.md`。
+10. `response-template` 不放进 `build-procedure`，由 `execute-procedure` 调用的其他 skill 提供。
