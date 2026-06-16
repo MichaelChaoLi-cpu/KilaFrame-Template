@@ -2,6 +2,8 @@
 
 主 README 为英文：[README.md](README.md)。本文是中文辅助说明。
 
+版本号：`v0.0.0`
+
 KilaFrame Template 是一组用于论文审稿修改流程的 Codex skills。它本身不处理某一篇具体论文，而是提供可复用的 workflow skills，让用户把这些 skills 复制到某个 research repo 中使用。
 
 ## 核心边界
@@ -101,6 +103,6 @@ Rev/revision/*
 
 ## 开发说明
 
-总体设计来源是 [idea/overall.md](idea/overall.md)。原始输入 idea 保存在 [idea/original-idea.md](idea/original-idea.md)。
+总体设计来源是 [idea/overall.md](idea/overall.md)。
 
 内置 response DOCX 模板已经脱敏，位置是 `.codex/skills/convert-response-docx/assets/response-template.docx`。

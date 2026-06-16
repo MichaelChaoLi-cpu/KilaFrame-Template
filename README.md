@@ -2,6 +2,8 @@
 
 Primary language: English. Chinese companion: [README.zh-CN.md](README.zh-CN.md).
 
+Version: `v0.0.0`
+
 KilaFrame Template is a Codex skill bundle for manuscript revision workflows. It is designed to be copied into a separate research repository, where Codex can initialize a revision workspace, build a procedure file, execute the procedure, keep logs, and dispatch document-conversion subskills.
 
 This repository is not meant to hold a specific manuscript. It holds reusable workflow skills.
@@ -103,6 +105,6 @@ If the workspace is named `Rev1/`, replace `Rev/` with `Rev1/`.
 
 ## Development Notes
 
-The design source is [idea/overall.md](idea/overall.md). The preserved raw idea is [idea/original-idea.md](idea/original-idea.md).
+The design source is [idea/overall.md](idea/overall.md).
 
 The bundled response DOCX template has been sanitized and is stored at `.codex/skills/convert-response-docx/assets/response-template.docx`.
